@@ -28,7 +28,7 @@ var app = express();
 
 // -----------------------------------------------------------------------------
 // Setup to generate tokens.
-//  Documentation: 
+//  Documentation, sample Node.JS program: 
 //      https://www.twilio.com/docs/iam/access-tokens?code-sample=code-create-an-access-token-for-video&code-language=Node.js&code-sdk-version=3.x
 // 
 // Environment variables used to generate video tokens.
@@ -37,8 +37,6 @@ var API_KEY = process.env.MASTER_API_KEY;
 var API_KEY_SECRET = process.env.MASTER_API_KEY_SECRET;
 //
 function generateToken(theIdentity) {
-// https://www.twilio.com/docs/iam/access-tokens
-//
     if (theIdentity === "") {
         console.log("- Required: user identity for creating a Conversations token.");
         return "";
