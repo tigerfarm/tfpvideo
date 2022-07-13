@@ -1,8 +1,25 @@
+#### Files in the "address" directory
+
++ [webserver.js](webserver.js) : a NodeJS Express HTTP Server that serves the client files 
+and generates Twilio video tokens.
++ [docroot/index.html](docroot/index.html) : Client HTML, basic video client application
++ [docroot/video.js](docroot/video.js) : JavaScript code based on the
+[documentation samples](https://www.twilio.com/docs/video/javascript-getting-started).
++ [docroot/video.css](docroot/video.css) : Web page styles and formatting
+
 # Twilio JavaScript Video client web application 
 
-In development.
+In development. Mostly works.
 
-### Web Client
+To do:
++ Need to properly clean up DOM objects after leaving a room.
++ Need to properly clean up DOM objects after a remote participant leaves the room.
++ Mute and unmute audio.
++ Turn video track off and on.
+
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/tigerfarm/tfpvideo)
+
+### Web Client Screen Print
 
 <img src="videoclient01.jpg" width="600"/>
 

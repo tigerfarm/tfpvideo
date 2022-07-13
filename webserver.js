@@ -27,6 +27,7 @@ const PORT = process.env.PORT || 8000;
 var app = express();
 
 // -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Setup to generate tokens.
 //  Documentation, sample Node.JS program: 
 //      https://www.twilio.com/docs/iam/access-tokens?code-sample=code-create-an-access-token-for-video&code-language=Node.js&code-sdk-version=3.x
@@ -50,7 +51,7 @@ function generateToken(theIdentity) {
             {identity: theIdentity}
             );
     const theGrant = new AccessToken.VideoGrant({
-        // room: 'theRoom'  // Optional
+        // room: 'theRoom'  // Optional, restrict the token to a specific room.
     });
     token.addGrant(theGrant);
     // token.ttl = 1200; // Token time to live, in seconds. 1200 = 20 minutes.
@@ -77,6 +78,7 @@ app.get('/getToken', function (req, res) {
     }
 });
 
+// -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 app.get('/hello', function (req, res) {
     res.send('+ hello there.');
