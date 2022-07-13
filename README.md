@@ -6,6 +6,7 @@ and generates Twilio video tokens.
 + [docroot/video.js](docroot/video.js) : JavaScript code based on the
 [documentation samples](https://www.twilio.com/docs/video/javascript-getting-started).
 + [docroot/video.css](docroot/video.css) : Web page styles and formatting
++ app.json and package.json, file descriptures for deploying to Heroku.
 
 # Twilio JavaScript Video client web application 
 
