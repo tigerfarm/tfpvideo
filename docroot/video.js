@@ -44,18 +44,30 @@ function previewLocalTracks() {
 
 // Attach the Participant's Tracks to the DOM.
 // Documentation: https://www.twilio.com/docs/video/javascript-getting-started#display-a-remote-participants-video
+// Tutorial: https://www.twilio.com/docs/video/tutorials/get-started-with-twilio-video-node-express-frontend#display-data-from-tracks
 function attachParticipantTracks(participant) {
+    // DIV for remote participants.
     var remoteParticipantContainer = document.getElementById('remote-media-div');
+    //
+    // create a div for this participant's tracks
+    var participantDiv = document.createElement("div");
+    participantDiv.setAttribute("id", participant.identity);
+    remoteParticipantContainer.appendChild(participantDiv);
+    theParticipantDiv = document.getElementById(participant.identity);
+    //
     participant.tracks.forEach(publication => {
         if (publication.isSubscribed) {
             log("+ participantConnected, track published, isSubscribed: " + publication.track.kind);
             const track = publication.track;
-            remoteParticipantContainer.appendChild(track.attach());
+            // From Documentation, Old: remoteParticipantContainer.appendChild(track.attach());
+            // From Tutorial:
+            theParticipantDiv.appendChild(track.attach());
         }
     });
     participant.on('trackSubscribed', track => {
-        log("++ participantConnected: " + participant.identity + ", trackSubscribed: " + track.kind);
-        document.getElementById('remote-media-div').appendChild(track.attach());
+        log("++ " + participant.identity + ", trackSubscribed: " + track.kind);
+        theParticipantDiv.appendChild(track.attach());
+        // From Documentation, Old: document.getElementById('remote-media-div').appendChild(track.attach());
     });
 }
 
@@ -81,6 +93,11 @@ function detachTracks(tracks) {
 // Room functions
 
 function joinRoom() {
+    if (!previewTracks && setCamera) {
+        // Attach LocalParticipant's Tracks, if not already attached.
+        // This confirms that the camera and mic are available.
+        previewLocalTracks();
+    }
     log("+ joinRoom,  room: " + roomName + ", Camera:" + setCamera + " Mic:" + setMic + " Token:" + theToken + ":");
     var connectOptions = {
         name: roomName,
@@ -124,7 +141,7 @@ function roomJoined(room) {
 
     // New participant
     room.on('participantConnected', function (participant) {
-        log("++ participantConnected: " + participant.identity);
+        log("+ participantConnected: " + participant.identity);
         var remoteContainer = document.getElementById('remote-media');
         attachParticipantTracks(participant, remoteContainer);
     });
@@ -132,18 +149,17 @@ function roomJoined(room) {
     room.on('participantDisconnected', function (participant) {
         log("+ Participant: " + participant.identity + ", left the room: " + roomName);
         //
-        // Stacy, detach the Participant's Tracks from the DOM.
-        // For now, detach the firstChild, which needs to run twice for some reason.
-        log('+ Detach Participant tracks.');
-        document.getElementById('remote-media-div').firstChild.remove();
-        document.getElementById('remote-media-div').firstChild.remove();
+        // Stacy
+        // stop listening for this participant
+        participant.removeAllListeners();
+        // remove this participant's div from the page
+        const participantDiv = document.getElementById(participant.identity);
+        participantDiv.remove();
     });
     // ----------------------------------------------------
     // You leave the room.
     room.on('disconnected', function () {
         log('+ You, left the room: ' + roomName);
-        //
-        // Stacy, need to remove remote participant DOM elements.
         // 
         // Detach the local media elements
         // Documentation: https://www.twilio.com/docs/video/javascript-getting-started#disconnect-from-a-room
@@ -153,7 +169,7 @@ function roomJoined(room) {
             room.localParticipant.tracks.forEach(publication => {
                 log('++ Detach local track: ' + publication.track.kind);
                 const attachedElements = publication.track.detach();
-                // attachedElements.forEach(element => element.remove());  // Stacy, didn't work
+                // attachedElements.forEach(element => element.remove());  // Stacy, documentation command didn't work
                 mediaContainer.firstChild.remove();
             });
             // https://www.w3schools.com/jsref/prop_node_firstchild.asp
@@ -174,8 +190,27 @@ function roomJoined(room) {
         activeRoom = null;
         document.getElementById('button-join').style.display = 'inline';
         document.getElementById('button-leave').style.display = 'none';
-    }
-    );
+        //
+        log('+ Disconnected from the room.');
+        //
+        // Stacy, need to remove remote participant DOM elements.
+        //
+        log('++ Remove remote tracks.');
+        // DIV for remote participants.
+        var remoteParticipantContainer = document.getElementById('remote-media-div');
+        //
+        // Remove DIVs under remoteParticipantContainer which are the participant DIVs
+        var elements = remoteParticipantContainer.children;
+        log('+ Nunmber of participant DIVs to remove: ' + elements.length);
+        if (elements.length === 0) {
+            log('++ No participant tracks to remove.');
+        } else {
+            log('++ Remove participant DIV: ' + elements[0].id);
+            var participantDiv = document.getElementById(elements[0].id);
+            participantDiv.remove();
+            log('++ Participant DIVs removed.');
+        }
+    });
 
 // ----------------------------------------------------
 // Individual track handling, not yet updated.
@@ -256,12 +291,12 @@ window.onload = function () {
     document.getElementById('button-join').onclick = function () {
         roomName = document.getElementById('roomid').value;
         clientId = document.getElementById('clientid').value;
-        if (roomName === "") {
-            log("++ Enter a room name.");
-            return;
-        }
         if (clientId === "") {
             log("++ Enter participant identity.");
+            return;
+        }
+        if (roomName === "") {
+            log("++ Enter a room name.");
             return;
         }
         log("Using participant id: " + clientId + ".");
@@ -283,7 +318,7 @@ window.onload = function () {
     // Bind button to leave Room.
     // Documentation: https://www.twilio.com/docs/video/javascript-getting-started#disconnect-from-a-room
     document.getElementById('button-leave').onclick = function () {
-        log('Leave the room: ' + roomName);
+        log('Click button to leave the room: ' + roomName);
         activeRoom.disconnect();
     };
 

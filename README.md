@@ -33,6 +33,22 @@ steps to create a video client web application.
 Generate tokens documentation with a sample
 [Node.JS program](https://www.twilio.com/docs/iam/access-tokens?code-sample=code-create-an-access-token-for-video&code-language=Node.js&code-sdk-version=3.x)
 
+[Programmable Video Tutorials](https://www.twilio.com/docs/video/tutorials)
+
+[Part 1: Creating a server with Node/Express](https://www.twilio.com/docs/video/tutorials/get-started-with-twilio-video-node-express-server)
+
+[Part 2: Creating the Frontend](https://www.twilio.com/docs/video/tutorials/get-started-with-twilio-video-node-express-frontend)
+
+''''
+const handleDisconnectedParticipant = (participant) => {
+  // stop listening for this participant
+  participant.removeAllListeners();
+  // remove this participant's div from the page
+  const participantDiv = document.getElementById(participant.identity);
+  participantDiv.remove();
+};
+''''
+
 --------------------------------------------------------------------------------
 
 Cheers...
