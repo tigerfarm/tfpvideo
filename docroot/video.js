@@ -2,7 +2,7 @@
 // Basic Twilio Video Client
 // 
 // To do:
-//  Move than 2 participants in a room.
+//  More than 2 participants in a room.
 //  Audio mute/unmute during a session.
 //  Video on/off during a session.
 //  Screen sharing.
@@ -88,7 +88,7 @@ function joinRoom() {
         // Attach LocalParticipant's Tracks, if not already attached.
         previewLocalTracks();
     }
-    log("+ joinRoom,  room: " + roomName + ", Camera:" + setCamera + " Mic:" + setMic + " Token:" + theToken + ":");
+    log("+ joinRoom,  room: " + roomName + ", Camera:" + setCamera + " Mic:" + setMic);
     var connectOptions = {
         name: roomName,
         video: setCamera, // { width: 800 }
@@ -189,12 +189,16 @@ function listDevices() {
     log("+ listDevices()");
     navigator.mediaDevices.enumerateDevices().then(devices => {
         const videoInput = devices.find(device => device.kind === 'videoinput');
-        log("++ " + videoInput.deviceId);
-    });
-    // reference: https://www.twilio.com/blog/2018/04/choosing-cameras-javascript-mediadevices-api.html
-    navigator.mediaDevices.enumerateDevices().then(devices => {
-        devices.forEach((device) => {
-            log("++ " + device.kind + " : " + device.deviceId);
+        log("++ Current, videoInput.deviceId: " + videoInput.deviceId);
+        navigator.mediaDevices.enumerateDevices().then(devices => {
+            const videoInput = devices.find(device => device.kind === 'audioinput');
+            log("++ Current, audioinput.deviceId: " + videoInput.deviceId);
+            // reference: https://www.twilio.com/blog/2018/04/choosing-cameras-javascript-mediadevices-api.html
+            navigator.mediaDevices.enumerateDevices().then(devices => {
+                devices.forEach((device) => {
+                    log("++ all: " + device.kind + " : " + device.deviceId);
+                });
+            });
         });
     });
 }
@@ -244,7 +248,8 @@ window.onload = function () {
     // When transitioning away from this page, disconnect from the room, if joined.
     window.addEventListener('beforeunload', leaveRoomIfJoined);
 
-    document.getElementById('room-controls').style.display = 'block';
+    document.getElementById('button-join').style.display = 'inline';
+    document.getElementById('button-leave').style.display = 'none';
 
     // Bind button to join Room.
     document.getElementById('button-join').onclick = function () {

@@ -2,7 +2,6 @@
 <html>
     <head>
         <title>Twilio Video</title>
-        <link rel="stylesheet" href="video2.css">
         <link rel="stylesheet" href="video.css">
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
         <!-- Recent release: https://github.com/twilio/twilio-video.js/releases -->
@@ -10,7 +9,7 @@
         <script src="video.js"></script>
     </head>
     <body>
-        <div id="chatBox">
+        <div id="controlBox">
             <div class="panelTitle">
                 Video Client Application using Twilio Video,
                 <a href="https://github.com/tigerfarm/tfpvideo" style="text-decoration:none;">
@@ -20,15 +19,15 @@
             <div style="margin-top: 12px;margin-bottom: 12px;">
                 <table>
                     <tr><td>
-                            <button class="abutton" id="button-preview">Preview My Camera</button>
-                            <button class="abutton" id="button-join">Join a room</button>
-                            <button class="abutton" id="button-leave">Leave a room</button>
+                            <button class="abutton" id="button-join"  style="width: 120px">Join a room</button>
+                            <button class="abutton" id="button-leave" style="width: 120px">Leave a room</button>
                         </td>
-                    </tr>
-                    <tr><td>
+                        <td>
                             <button class="abutton" id="button-devices" onclick="listDevices();">List Devices</button>
+                            <!--
                             <button class="abutton" id="button-camera"  onclick="toggleCamera();">Set Camera OFF</button>
                             <button class="abutton" id="button-Mic"     onclick="toggleMic();">Set Mic OFF</button>
+                            -->
                         </td>
                     </tr>
                 </table>
@@ -46,27 +45,19 @@
             </div>
             <div id="log">
                 <div class="panelTitle">
-                    Log messages
+                    Log messages <button class="abutton" id="clearLog" onclick="clearTextAreas();">Clear</button>
                 </div>
-                <textarea id="logBox" style="height: 180px; width: 440px;"></textarea>
-                <div class="panelArea">
-                    <table>
-                        <tr>
-                            <td><button class="abutton" id="clearLog" onclick="clearTextAreas();">Clear</button></td>
-                        </tr>
-                    </table>
-                </div>
+                <textarea id="logBox"></textarea>
             </div>
         </div>
         <table>
             <tr>
                 <td>
-                    <div id="controls">
-                        <div id="preview">
-                            <div id="local-media"></div>
-                        </div>
-                        <div id="room-controls">
-                        </div>
+                    <div id="preview">
+                        <button class="abutton" id="button-preview" style="margin-bottom: 6px">Preview My Camera</button>
+                        <div id="local-media"></div>
+                    </div>
+                    <div id="room-controls">
                     </div>
                 </td>
                 <td>
