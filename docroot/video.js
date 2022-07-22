@@ -1,5 +1,13 @@
 // -----------------------------------------------------------------
-// code
+// Basic Twilio Video Client
+// 
+// To do:
+//  Move than 2 participants in a room.
+//  Audio mute/unmute during a session.
+//  Video on/off during a session.
+//  Screen sharing.
+//  Backgrounds.
+//  
 // -----------------------------------------------------------------
 var theToken = "";
 var roomName = "";
@@ -33,6 +41,7 @@ function previewLocalTracks() {
     }
     // https://www.twilio.com/docs/video/javascript-getting-started#display-a-camera-preview
     log("+ Preview LocalParticipant's Tracks.");
+    // This confirms that the camera and mic are available.
     Twilio.Video.createLocalVideoTrack().then(track => {
         const localMediaContainer = document.getElementById('local-media');
         localMediaContainer.appendChild(track.attach());
@@ -72,30 +81,11 @@ function attachParticipantTracks(participant) {
 }
 
 // -----------------------------------------------------------------------------
-// Individual track handling, not updated.
-// 
-// Attach the Tracks to the DOM.
-function attachTracks(tracks, container) {
-    tracks.forEach(function (track) {
-        container.appendChild(track.attach());
-    });
-}
-// Detach the Tracks from the DOM.
-function detachTracks(tracks) {
-    tracks.forEach(function (track) {
-        track.detach().forEach(function (detachedElement) {
-            detachedElement.remove();
-        });
-    });
-}
-
-// -----------------------------------------------------------------------------
 // Room functions
 
 function joinRoom() {
     if (!previewTracks && setCamera) {
         // Attach LocalParticipant's Tracks, if not already attached.
-        // This confirms that the camera and mic are available.
         previewLocalTracks();
     }
     log("+ joinRoom,  room: " + roomName + ", Camera:" + setCamera + " Mic:" + setMic + " Token:" + theToken + ":");
@@ -106,11 +96,8 @@ function joinRoom() {
         logLevel: 'debug'
     };
     // Documentation: https://www.twilio.com/docs/video/javascript-getting-started#connect-to-a-room
-    // Twilio.Video.connect(theToken, connectOptions).then(roomJoined, function (error) {
-    //     log('Could not connect to Twilio: ' + error.message);
-    // });
     Twilio.Video.connect(theToken, connectOptions).then(room => {
-        log("+ Successfully joined a Room: " + roomName);
+        log("+ Connect, join a room: " + roomName);
         roomJoined(room);
     }, error => {
         console.error('- Could not connect to Twilio: ' + error.message);
@@ -119,7 +106,6 @@ function joinRoom() {
 }
 
 function roomJoined(room) {
-
     window.room = activeRoom = room;
     log("++ Joined as: " + clientId + ", activeRoom join: " + activeRoom);
     document.getElementById('button-join').style.display = 'none';
@@ -139,7 +125,7 @@ function roomJoined(room) {
     // ----------------------------------------------------
     // Room events
 
-    // New participant
+    // New participant connects to the room.
     room.on('participantConnected', function (participant) {
         log("+ participantConnected: " + participant.identity);
         var remoteContainer = document.getElementById('remote-media');
@@ -156,11 +142,11 @@ function roomJoined(room) {
         const participantDiv = document.getElementById(participant.identity);
         participantDiv.remove();
     });
-    // ----------------------------------------------------
     // You leave the room.
     room.on('disconnected', function () {
         log('+ You, left the room: ' + roomName);
         // 
+        // ----------------------------------------
         // Detach the local media elements
         // Documentation: https://www.twilio.com/docs/video/javascript-getting-started#disconnect-from-a-room
         if (previewTracks) {
@@ -172,36 +158,15 @@ function roomJoined(room) {
                 // attachedElements.forEach(element => element.remove());  // Stacy, documentation command didn't work
                 mediaContainer.firstChild.remove();
             });
-            // https://www.w3schools.com/jsref/prop_node_firstchild.asp
-            // 
-            // const element = document.getElementById("demo");
-            // element.remove();
-            // 
-            // let theFirstChild = document.getElementById("local-media").firstChild
-            // 
-            // Twilio.Video.createLocalVideoTrack().then(track => {
-            //      const localMediaContainer = document.getElementById('local-media');
-            //      localMediaContainer.appendChild(track.attach());
-            //      previewTracks = true;
-            // }
             previewTracks = false;
         }
+        // ----------------------------------------
+        // Remove remote participant DIVs.
         //
-        activeRoom = null;
-        document.getElementById('button-join').style.display = 'inline';
-        document.getElementById('button-leave').style.display = 'none';
-        //
-        log('+ Disconnected from the room.');
-        //
-        // Stacy, need to remove remote participant DOM elements.
-        //
-        log('++ Remove remote tracks.');
-        // DIV for remote participants.
         var remoteParticipantContainer = document.getElementById('remote-media-div');
-        //
-        // Remove DIVs under remoteParticipantContainer which are the participant DIVs
+        // Remove DIVs under remoteParticipantContainer which are the participant's DIVs.
         var elements = remoteParticipantContainer.children;
-        log('+ Nunmber of participant DIVs to remove: ' + elements.length);
+        log('+ Number of remote participant DIVs to remove: ' + elements.length);
         if (elements.length === 0) {
             log('++ No participant tracks to remove.');
         } else {
@@ -210,47 +175,34 @@ function roomJoined(room) {
             participantDiv.remove();
             log('++ Participant DIVs removed.');
         }
+        // ----------------------------------------
+        activeRoom = null;
+        document.getElementById('button-join').style.display = 'inline';
+        document.getElementById('button-leave').style.display = 'none';
+        log("+ You're disconnected from the room.");
     });
 
-// ----------------------------------------------------
-// Individual track handling, not yet updated.
-// Participant Track added.
-    room.on('trackAdded', function (track, participant) {
-        log(participant.identity + "++ added track: " + track.kind);
-        var previewContainer = document.getElementById('remote-media');
-        attachTracks([track], previewContainer);
-    });
-// Participant Track removed.
-    room.on('trackRemoved', function (track, participant) {
-        log(participant.identity + " removed track: " + track.kind);
-        detachTracks([track]);
-    });
-}
-
-function leaveRoomIfJoined() {
-    if (activeRoom) {
-        activeRoom.disconnect;
-    }
 }
 
 // -----------------------------------------------------------------------------
 function listDevices() {
-    log("listDevices:");
+    log("+ listDevices()");
     navigator.mediaDevices.enumerateDevices().then(devices => {
         const videoInput = devices.find(device => device.kind === 'videoinput');
-        // log("+ " + videoInput.deviceId);
-        // return createLocalTracks({ audio: true, video: { deviceId: videoInput.deviceId } });
-
+        log("++ " + videoInput.deviceId);
     });
     // reference: https://www.twilio.com/blog/2018/04/choosing-cameras-javascript-mediadevices-api.html
     navigator.mediaDevices.enumerateDevices().then(devices => {
         devices.forEach((device) => {
-            log("+ " + device.kind + " : " + device.deviceId);
+            log("++ " + device.kind + " : " + device.deviceId);
         });
     });
 }
 
 // -----------------------------------------------------------------------------
+// Local Media
+// Documentation: https://www.twilio.com/docs/video/javascript-getting-started#set-up-local-media
+
 var setCamera = true;
 var setMic = true;
 
@@ -275,6 +227,13 @@ function toggleMic() {
     log('Mic set ON');
     setMic = true;
     $("#button-Mic").html('Set Mic OFF');
+}
+
+// -----------------------------------------------------------------------------
+function leaveRoomIfJoined() {
+    if (activeRoom) {
+        activeRoom.disconnect;
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -329,4 +288,41 @@ window.onload = function () {
     };
 };
 
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Individual track handling, not updated.
+// 
+// Attach the Tracks to the DOM.
+function attachTracks(tracks, container) {
+    tracks.forEach(function (track) {
+        container.appendChild(track.attach());
+    });
+}
+// Detach the Tracks from the DOM.
+function detachTracks(tracks) {
+    tracks.forEach(function (track) {
+        track.detach().forEach(function (detachedElement) {
+            detachedElement.remove();
+        });
+    });
+}
+
+function doConnect() {
+    // This will go up into "Room events" section.
+    // "doConnect()" is just a place holder.
+    // 
+    // ----------------------------------------------------
+    // Individual track handling, not yet updated.
+    // Participant Track added.
+    room.on('trackAdded', function (track, participant) {
+        log(participant.identity + "++ added track: " + track.kind);
+        var previewContainer = document.getElementById('remote-media');
+        attachTracks([track], previewContainer);
+    });
+    // Participant Track removed.
+    room.on('trackRemoved', function (track, participant) {
+        log(participant.identity + " removed track: " + track.kind);
+        detachTracks([track]);
+    });
+}
 // -----------------------------------------------------------------------------

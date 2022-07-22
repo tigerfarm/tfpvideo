@@ -39,10 +39,10 @@ var API_KEY_SECRET = process.env.MASTER_API_KEY_SECRET;
 //
 function generateToken(theIdentity) {
     if (theIdentity === "") {
-        console.log("- Required: user identity for creating a Conversations token.");
+        console.log("- Required: user identity for creating a token.");
         return "";
     }
-    sayMessage("+ Generate token, Conversations participants ID: " + theIdentity);
+    sayMessage("+ Generate token, identity: " + theIdentity);
     const AccessToken = require('twilio').jwt.AccessToken;
     const token = new AccessToken(
             ACCOUNT_SID,
