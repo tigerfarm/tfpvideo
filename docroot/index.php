@@ -66,7 +66,7 @@ $token->addGrant($videoGrant);
     <body>
         <div id="controls">
             <div id="preview">
-                <a href="https://github.com/tigerfarm/owlvideo" style="text-decoration:none;">
+                <a href="https://github.com/tigerfarm/tfpvideo" style="text-decoration:none;">
                     <p class="instructions">Twilio Video GitHub Project</p>
                 </a>
                 <div id="local-media"></div>
@@ -78,11 +78,8 @@ $token->addGrant($videoGrant);
                 <p>
                     <input type="text" id="clientid" name="clientid" placeholder="Enter participant id"/>
                     <input type="text" id="roomid" name="roomid" placeholder="Enter room name"/>
-                    <!-- button id="button-check" onclick="checkRoom();">Check Room</button -->
                 </p>
                 <p><button id="button-devices" onclick="listDevices();">List Devices</button></p>
-                <p><button id="button-camera" onclick="toggleCamera();">Set Camera OFF</button></p>
-                <p><button id="button-Mic" onclick="toggleMic();">Set Mic OFF</button></p>
             </div>
             <div id="log">
                 <div class="panelTitle">

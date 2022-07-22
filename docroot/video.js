@@ -2,16 +2,20 @@
 // Basic Twilio Video Client
 // 
 // To do:
+//  Set preview tracks on/off. Currently, only on. "Leave" room has code to turn preview tracks off.
 //  More than 2 participants in a room.
 //  Audio mute/unmute during a session.
 //  Video on/off during a session.
-//  Screen sharing.
+//  Screen sharing. Handling individual tracks
 //  Backgrounds.
 //  
 // -----------------------------------------------------------------
 var theToken = "";
 var roomName = "";
 var clientId = "";
+
+var activeRoom = null;
+var previewTracks = false;
 
 // -----------------------------------------------------------------
 function log(message) {
@@ -31,16 +35,19 @@ function clearTextAreas() {
 // -----------------------------------------------------------------------------
 // Track functions
 
-var activeRoom = null;
-var previewTracks = false;
-
 function previewLocalTracks() {
     if (previewTracks) {
         log("+ Already previewing LocalParticipant's Tracks.");
         return;
     }
+    //
     // https://www.twilio.com/docs/video/javascript-getting-started#display-a-camera-preview
-    log("+ Preview LocalParticipant's Tracks.");
+    // Before attaching video track:
+    //      <div id="local-media"></div>
+    // After attaching video track:
+    //      <div id="local-media"><video autoplay=""></video></div>
+    //
+    log("++ Preview LocalParticipant's Tracks.");
     // This confirms that the camera and mic are available.
     Twilio.Video.createLocalVideoTrack().then(track => {
         const localMediaContainer = document.getElementById('local-media');
@@ -58,7 +65,12 @@ function attachParticipantTracks(participant) {
     // DIV for remote participants.
     var remoteParticipantContainer = document.getElementById('remote-media-div');
     //
-    // create a div for this participant's tracks
+    // Before attaching participant video track:
+    //      <div id="remote-media-div">remote-media</div>
+    // After attaching video track:
+    //      <div id="remote-media-div">remote-media<div id="stacy"><video autoplay=""></video></div></div>
+    //
+    // Create a div for this participant's tracks
     var participantDiv = document.createElement("div");
     participantDiv.setAttribute("id", participant.identity);
     remoteParticipantContainer.appendChild(participantDiv);
@@ -84,30 +96,25 @@ function attachParticipantTracks(participant) {
 // Room functions
 
 function joinRoom() {
-    if (!previewTracks && setCamera) {
-        // Attach LocalParticipant's Tracks, if not already attached.
-        previewLocalTracks();
-    }
-    log("+ joinRoom,  room: " + roomName + ", Camera:" + setCamera + " Mic:" + setMic);
+    log("+ joinRoom() room: " + roomName + ", Camera:" + setCamera + " Mic:" + setMic);
     var connectOptions = {
         name: roomName,
         video: setCamera, // { width: 800 }
-        baudio: setMic,
-        logLevel: 'debug'
+        baudio: setMic
+                //, logLevel: 'debug'
     };
     // Documentation: https://www.twilio.com/docs/video/javascript-getting-started#connect-to-a-room
     Twilio.Video.connect(theToken, connectOptions).then(room => {
-        log("+ Connect, join a room: " + roomName);
+        log("++ Twilio.Video.connect, join the room: " + roomName);
         roomJoined(room);
     }, error => {
         console.error('- Could not connect to Twilio: ' + error.message);
     });
-
 }
 
 function roomJoined(room) {
     window.room = activeRoom = room;
-    log("++ Joined as: " + clientId + ", activeRoom join: " + activeRoom);
+    log("++ activeRoom set: " + activeRoom);
     document.getElementById('button-join').style.display = 'none';
     document.getElementById('button-leave').style.display = 'inline';
 
@@ -123,19 +130,22 @@ function roomJoined(room) {
     });
 
     // ----------------------------------------------------
-    // Room events
+    // Set room event handling
 
     // New participant connects to the room.
     room.on('participantConnected', function (participant) {
-        log("+ participantConnected: " + participant.identity);
-        var remoteContainer = document.getElementById('remote-media');
-        attachParticipantTracks(participant, remoteContainer);
+        log("+ Room event, participant connected: " + participant.identity);
+        attachParticipantTracks(participant);
     });
     // Participant leaves the Room.
     room.on('participantDisconnected', function (participant) {
-        log("+ Participant: " + participant.identity + ", left the room: " + roomName);
+        log("+  Room event, Participant disconnected: " + participant.identity + ", room: " + roomName);
         //
-        // Stacy
+        // Before detaching participant video track:
+        //      <div id="remote-media-div">remote-media<div id="stacy"><video autoplay=""></video></div></div>
+        // After detaching video track:
+        //      <div id="remote-media-div">remote-media</div>
+        //
         // stop listening for this participant
         participant.removeAllListeners();
         // remove this participant's div from the page
@@ -144,7 +154,7 @@ function roomJoined(room) {
     });
     // You leave the room.
     room.on('disconnected', function () {
-        log('+ You, left the room: ' + roomName);
+        log('+ Room event, you are disconnecting from the room: ' + roomName);
         // 
         // ----------------------------------------
         // Detach the local media elements
@@ -154,8 +164,8 @@ function roomJoined(room) {
             const mediaContainer = document.getElementById('local-media');
             room.localParticipant.tracks.forEach(publication => {
                 log('++ Detach local track: ' + publication.track.kind);
-                const attachedElements = publication.track.detach();
-                // attachedElements.forEach(element => element.remove());  // Stacy, documentation command didn't work
+                // const attachedElements = publication.track.detach();     // Stacy, documentation command didn't work
+                // attachedElements.forEach(element => element.remove());
                 mediaContainer.firstChild.remove();
             });
             previewTracks = false;
@@ -166,7 +176,7 @@ function roomJoined(room) {
         var remoteParticipantContainer = document.getElementById('remote-media-div');
         // Remove DIVs under remoteParticipantContainer which are the participant's DIVs.
         var elements = remoteParticipantContainer.children;
-        log('+ Number of remote participant DIVs to remove: ' + elements.length);
+        log('+ Number of remote participant to remove: ' + elements.length);
         if (elements.length === 0) {
             log('++ No participant tracks to remove.');
         } else {
@@ -181,7 +191,8 @@ function roomJoined(room) {
         document.getElementById('button-leave').style.display = 'none';
         log("+ You're disconnected from the room.");
     });
-
+    // ----------------------------------------------------
+    log("+ Room joined and set up.");
 }
 
 // -----------------------------------------------------------------------------
@@ -205,6 +216,8 @@ function listDevices() {
 
 // -----------------------------------------------------------------------------
 // Local Media
+//  Needs further implementation and testing
+//  
 // Documentation: https://www.twilio.com/docs/video/javascript-getting-started#set-up-local-media
 
 var setCamera = true;
@@ -234,6 +247,7 @@ function toggleMic() {
 }
 
 // -----------------------------------------------------------------------------
+// Needs testing
 function leaveRoomIfJoined() {
     if (activeRoom) {
         activeRoom.disconnect;
@@ -241,24 +255,28 @@ function leaveRoomIfJoined() {
 }
 
 // -----------------------------------------------------------------------------
-// Activity log.
 window.onload = function () {
-    log('+++ Start.');
+    document.getElementById('logBox').value = '+++ Start.';
 
     // When transitioning away from this page, disconnect from the room, if joined.
     window.addEventListener('beforeunload', leaveRoomIfJoined);
 
+    // "Join" is visible. "Leave" is not, until a room is joined.
     document.getElementById('button-join').style.display = 'inline';
     document.getElementById('button-leave').style.display = 'none';
 
     // Bind button to join Room.
     document.getElementById('button-join').onclick = function () {
-        roomName = document.getElementById('roomid').value;
+        // Validate room joining requirements:
+        //  + participant identity
+        //  + room name
+        //  + video token
         clientId = document.getElementById('clientid').value;
         if (clientId === "") {
             log("++ Enter participant identity.");
             return;
         }
+        roomName = document.getElementById('roomid').value;
         if (roomName === "") {
             log("++ Enter a room name.");
             return;

@@ -42,7 +42,6 @@ function generateToken(theIdentity) {
         console.log("- Required: user identity for creating a token.");
         return "";
     }
-    sayMessage("+ Generate token, identity: " + theIdentity);
     const AccessToken = require('twilio').jwt.AccessToken;
     const token = new AccessToken(
             ACCOUNT_SID,
@@ -56,6 +55,7 @@ function generateToken(theIdentity) {
     token.addGrant(theGrant);
     // token.ttl = 1200; // Token time to live, in seconds. 1200 = 20 minutes.
     theToken = token.toJwt();
+    sayMessage("+ Generated the token, identity: " + theIdentity);
     // console.log("+ theToken " + theToken);
     return(theToken);
 }
@@ -82,6 +82,12 @@ app.get('/getToken', function (req, res) {
 // -----------------------------------------------------------------------------
 app.get('/hello', function (req, res) {
     res.send('+ hello there.');
+});
+// -----------------------------------------------------------------------------
+app.get('/favicon.ico', function(req, res) {
+    console.log('GET: /favicon.ico');
+    res.status(204);
+    // Option to actually return favicon.ico: http://expressjs.com/en/resources/middleware/serve-favicon.html
 });
 // -----------------------------------------------------------------------------
 app.use(express.static('docroot'));
