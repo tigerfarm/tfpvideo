@@ -22,7 +22,7 @@ To do:
 
 ### Web Client Screen Print
 
-<img src="videoclient01.jpg" width="600"/>
+<img src="tfpvideo.jpg" width="600"/>
 
 --------------------------------------------------------------------------------
 ### Documentation Links

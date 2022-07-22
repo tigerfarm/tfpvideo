@@ -1,4 +1,4 @@
-console.log("+++ List all participants in all the active(in-progress) video rooms.");
+console.log("+++ Set all video rooms to status: completed. This closes the rooms.");
 var client = require('twilio')(process.env.MASTER_ACCOUNT_SID, process.env.MASTER_AUTH_TOKEN);
 
 client.video.rooms.list()   // Default is status: in-progress.
