@@ -2,6 +2,7 @@
 <html>
     <head>
         <title>Twilio Video</title>
+        <link rel="stylesheet" href="video2.css">
         <link rel="stylesheet" href="video.css">
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
         <!-- Recent release: https://github.com/twilio/twilio-video.js/releases -->
@@ -9,24 +10,39 @@
         <script src="video.js"></script>
     </head>
     <body>
-        <div id="controls">
-            <div id="preview">
+        <div id="chatBox">
+            <div class="panelTitle">
+                Video Client Application using Twilio Video,
                 <a href="https://github.com/tigerfarm/tfpvideo" style="text-decoration:none;">
-                    <p class="instructions">GitHub Project</p>
+                    GitHub Project
                 </a>
-                <div id="local-media"></div>
-                <button id="button-preview">Preview My Camera</button>
             </div>
-            <div id="room-controls">
-                <button id="button-join">Join Room</button>
-                <button id="button-leave">Leave Room</button>
-                <p>
-                    <input type="text" id="clientid" name="clientid" placeholder="Enter participant id"/>
-                    <input type="text" id="roomid" name="roomid" placeholder="Enter room name"/>
-                </p>
-                <p><button id="button-devices" onclick="listDevices();">List Devices</button></p>
-                <p><button id="button-camera" onclick="toggleCamera();">Set Camera OFF</button></p>
-                <p><button id="button-Mic" onclick="toggleMic();">Set Mic OFF</button></p>
+            <div style="margin-top: 12px;margin-bottom: 12px;">
+                <table>
+                    <tr><td>
+                            <button class="abutton" id="button-preview">Preview My Camera</button>
+                            <button class="abutton" id="button-join">Join a room</button>
+                            <button class="abutton" id="button-leave">Leave a room</button>
+                        </td>
+                    </tr>
+                    <tr><td>
+                            <button class="abutton" id="button-devices" onclick="listDevices();">List Devices</button>
+                            <button class="abutton" id="button-camera"  onclick="toggleCamera();">Set Camera OFF</button>
+                            <button class="abutton" id="button-Mic"     onclick="toggleMic();">Set Mic OFF</button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="panelArea">
+                <table>
+                    <tr><td>Identity </td>
+                        <td><input id="clientid" name="clientid" type="text" placeholder="Enter participant id" /></td>
+                        <td id="cUsername"></td>
+                    </tr>
+                    <tr><td>Room &nbsp;&nbsp;</td>
+                        <td><input id="roomid" name="roomid" type="text" placeholder="Enter room name" /></td>
+                    </tr>
+                </table>
             </div>
             <div id="log">
                 <div class="panelTitle">
@@ -42,8 +58,23 @@
                 </div>
             </div>
         </div>
-        <div id="remote-media-div">
-            remote-media
-        </div>
+        <table>
+            <tr>
+                <td>
+                    <div id="controls">
+                        <div id="preview">
+                            <div id="local-media"></div>
+                        </div>
+                        <div id="room-controls">
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div id="remote-media-div">
+                        remote-media
+                    </div>
+                </td>
+            </tr>
+        </table>
     </body>
 </html>
