@@ -46,13 +46,23 @@ This section documents [video.js](docroot/video.js), the client JavaScript code.
 window.onload : initialize log message text box. Bind functionality to HTML buttons in [index.html](docroot/index.html)
 
 #### Preview Video Track
-[previewLocalTracks()](https://www.twilio.com/docs/video/javascript-getting-started#display-a-camera-preview)
-: in the HTML DOM, append the Twilio Video video track DIV, into a DIV container.
+
+[previewLocalTracksAttach()](https://www.twilio.com/docs/video/javascript-getting-started#display-a-camera-preview)
+: in the HTML DOM, append the local Twilio Video video track DIV, into a DIV container.
 ````
 Before attaching video track:
     <div id="local-media"></div>
 After attaching video track:
     <div id="local-media"><video autoplay=""></video></div>
+````
+
+[previewLocalTracksDetach](https://www.twilio.com/docs/video/javascript-getting-started#disconnect-from-a-room)
+: in the HTML DOM, remove the local Twilio Video video track DIV, from the DIV container.
+````
+Before detach video track:
+    <div id="local-media"><video autoplay=""></video></div>
+After detach video track:
+    <div id="local-media"></div>
 ````
 
 #### You join a Room.
@@ -79,16 +89,23 @@ Room event: disconnected.
 + Detach the local media video track.
 + Remove all remote participant DIVs.
 
-#### Remote participant joins a Room.
+#### You're in a Room, and a Remote participant joins the Room.
 
 Room event: participantConnected.
 + Attach the tracks of the room's current participants: attachParticipantTracks(participant)
 
-#### Remote participant leaves a Room that you are in.
+#### You're in a Room, and a Remote participant leaves the Room.
 
 Room event: participantDisconnected.
-+ Remove remote participant DIVs.
++ Remove the the listeners for this participant.
++ Remove remote participant DIV.
 
+````
+Before detaching participant video track:
+    <div id="remote-media-div">remote-media<div id="stacy"><video autoplay=""></video></div></div>
+After detaching video track:
+    <div id="remote-media-div">remote-media</div>
+````
 --------------------------------------------------------------------------------
 ### Twilio Video Web Application Documentation Links
 

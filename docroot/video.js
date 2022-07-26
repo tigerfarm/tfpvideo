@@ -2,7 +2,6 @@
 // Basic Twilio Video Client
 // 
 // To do:
-//  Set preview tracks on/off. Currently, only on. "Leave" room has code to turn preview tracks off.
 //  More than 2 participants in a room.
 //  Audio mute/unmute during a session.
 //  Video on/off during a session.
@@ -16,6 +15,9 @@ var clientId = "";
 
 var activeRoom = null;
 var previewTracks = false;
+
+var setCamera = true;
+var setMic = true;
 
 // -----------------------------------------------------------------
 function log(message) {
@@ -40,7 +42,6 @@ function previewLocalTracksAttach() {
         log("+ Already previewing LocalParticipant's Tracks.");
         return;
     }
-    //
     // https://www.twilio.com/docs/video/javascript-getting-started#display-a-camera-preview
     // Before attaching video track:
     //      <div id="local-media"></div>
@@ -48,13 +49,43 @@ function previewLocalTracksAttach() {
     //      <div id="local-media"><video autoplay=""></video></div>
     //
     log("++ Preview LocalParticipant's Tracks.");
-    // This confirms that the camera and mic are available.
+    // Also, this confirms that the camera and mic are available.
     Twilio.Video.createLocalVideoTrack().then(track => {
         const localMediaContainer = document.getElementById('local-media');
         localMediaContainer.appendChild(track.attach());
         previewTracks = true;
+        document.getElementById('button-preview').style.display = 'none';
+        document.getElementById('button-previewStop').style.display = 'inline';
     }, function (error) {
+        log('- Is your laptop open to allow access to the camera and mic?');
         log('- Unable to access Camera and Microphone: ' + error);
+    });
+}
+
+function previewLocalTracksDetach() {
+    if (!previewTracks) {
+        log("+ Not previewing LocalParticipant's Tracks.");
+        return;
+    }
+    // Documentation: https://www.twilio.com/docs/video/javascript-getting-started#disconnect-from-a-room
+    // Before attaching video track:
+    //      <div id="local-media"><video autoplay=""></video></div>
+    // After attaching video track:
+    //      <div id="local-media"></div>
+    //
+    // Detach the local media elements
+    log('++ Detach local preview tracks.');
+    const mediaContainer = document.getElementById('local-media');
+    mediaContainer.firstChild.remove();
+    previewTracks = false;
+    document.getElementById('button-preview').style.display = 'inline';
+    document.getElementById('button-previewStop').style.display = 'none';
+    return;
+    // Stacy, documentation command didn't work. It should work.
+    room.localParticipant.tracks.forEach(publication => {
+        log('++ Detach local track: ' + publication.track.kind);
+        const attachedElements = publication.track.detach();
+        attachedElements.forEach(element => element.remove());
     });
 }
 
@@ -115,8 +146,11 @@ function joinRoom() {
 function roomJoined(room) {
     window.room = activeRoom = room;
     log("++ activeRoom set: " + activeRoom);
+
     document.getElementById('button-join').style.display = 'none';
     document.getElementById('button-leave').style.display = 'inline';
+    document.getElementById('button-preview').style.display = 'none';
+    document.getElementById('button-previewStop').style.display = 'inline';
 
     // Attach LocalParticipant's Tracks.
     previewLocalTracksAttach();
@@ -145,33 +179,20 @@ function roomJoined(room) {
         // After detaching video track:
         //      <div id="remote-media-div">remote-media</div>
         //
-        // stop listening for this participant
+        // Remove the the listeners for this participant.
         participant.removeAllListeners();
-        // remove this participant's div from the page
+        // Remove this participant's DIV from the page
         const participantDiv = document.getElementById(participant.identity);
         participantDiv.remove();
     });
     // You leave the room.
     room.on('disconnected', function () {
         log('+ Room event, you are disconnecting from the room: ' + roomName);
-        // 
         // ----------------------------------------
         // Detach the local media elements
-        // Documentation: https://www.twilio.com/docs/video/javascript-getting-started#disconnect-from-a-room
-        if (previewTracks) {
-            log('+ Detach local tracks.');
-            const mediaContainer = document.getElementById('local-media');
-            room.localParticipant.tracks.forEach(publication => {
-                log('++ Detach local track: ' + publication.track.kind);
-                // const attachedElements = publication.track.detach();     // Stacy, documentation command didn't work
-                // attachedElements.forEach(element => element.remove());
-                mediaContainer.firstChild.remove();
-            });
-            previewTracks = false;
-        }
+        previewLocalTracksDetach();
         // ----------------------------------------
         // Remove remote participant DIVs.
-        //
         var remoteParticipantContainer = document.getElementById('remote-media-div');
         // Remove DIVs under remoteParticipantContainer which are the participant's DIVs.
         var elements = remoteParticipantContainer.children;
@@ -214,38 +235,6 @@ function listDevices() {
 }
 
 // -----------------------------------------------------------------------------
-// Local Media
-//  Needs further implementation and testing
-//  
-// Documentation: https://www.twilio.com/docs/video/javascript-getting-started#set-up-local-media
-
-var setCamera = true;
-var setMic = true;
-
-function toggleCamera() {
-    if (setCamera) {
-        log('Camera set OFF');
-        setCamera = false;
-        $("#button-camera").html('Set Camera ON');
-        return;
-    }
-    log('Camera set ON');
-    setCamera = true;
-    $("#button-camera").html('Set Camera OFF');
-}
-function toggleMic() {
-    if (setMic) {
-        log('Mic set OFF');
-        setMic = false;
-        $("#button-Mic").html('Set Mic ON');
-        return;
-    }
-    log('Mic set ON');
-    setMic = true;
-    $("#button-Mic").html('Set Mic OFF');
-}
-
-// -----------------------------------------------------------------------------
 // Needs testing
 function leaveRoomIfJoined() {
     if (activeRoom) {
@@ -263,6 +252,8 @@ window.onload = function () {
     // "Join" is visible. "Leave" is not, until a room is joined.
     document.getElementById('button-join').style.display = 'inline';
     document.getElementById('button-leave').style.display = 'none';
+    document.getElementById('button-preview').style.display = 'inline';
+    document.getElementById('button-previewStop').style.display = 'none';
 
     // Bind button to join Room.
     document.getElementById('button-join').onclick = function () {
@@ -302,49 +293,6 @@ window.onload = function () {
         log('Click button to leave the room: ' + roomName);
         activeRoom.disconnect();
     };
-
-    // Preview LocalParticipant's Tracks.
-    // Documentation: https://www.twilio.com/docs/video/javascript-getting-started#set-up-local-media
-    document.getElementById('button-preview').onclick = function () {
-        previewLocalTracksAttach();
-    };
 };
 
-// -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
-// Individual track handling, not updated.
-// 
-// Attach the Tracks to the DOM.
-function attachTracks(tracks, container) {
-    tracks.forEach(function (track) {
-        container.appendChild(track.attach());
-    });
-}
-// Detach the Tracks from the DOM.
-function detachTracks(tracks) {
-    tracks.forEach(function (track) {
-        track.detach().forEach(function (detachedElement) {
-            detachedElement.remove();
-        });
-    });
-}
-
-function doConnect() {
-    // This will go up into "Room events" section.
-    // "doConnect()" is just a place holder.
-    // 
-    // ----------------------------------------------------
-    // Individual track handling, not yet updated.
-    // Participant Track added.
-    room.on('trackAdded', function (track, participant) {
-        log(participant.identity + "++ added track: " + track.kind);
-        var previewContainer = document.getElementById('remote-media');
-        attachTracks([track], previewContainer);
-    });
-    // Participant Track removed.
-    room.on('trackRemoved', function (track, participant) {
-        log(participant.identity + " removed track: " + track.kind);
-        detachTracks([track]);
-    });
-}
 // -----------------------------------------------------------------------------
