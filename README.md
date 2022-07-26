@@ -42,8 +42,10 @@ To do:
 
 This documents: [docroot/video.js](docroot/video.js), JavaScript code.
 
+##### Startup
 window.onload : initialize log message text box. Bind functionality to HTML buttons in [index.html](docroot/index.html)
 
+##### Preview Video Track
 [previewLocalTracks()](https://www.twilio.com/docs/video/javascript-getting-started#display-a-camera-preview)
 : append the Twilio Video video track into a DIV container.
 ````
