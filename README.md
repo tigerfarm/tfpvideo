@@ -46,12 +46,12 @@ window.onload : initialize log message text box. Bind functionality to HTML butt
 
 [previewLocalTracks()](https://www.twilio.com/docs/video/javascript-getting-started#display-a-camera-preview)
 : append the Twilio Video video track into a DIV container.
-''''
+````
 Before attaching video track:
     <div id="local-media"></div>
 After attaching video track:
     <div id="local-media"><video autoplay=""></video></div>
-''''
+````
 
 --------------------------------------------------------------------------------
 ### Documentation Links
@@ -67,8 +67,7 @@ Generate tokens documentation with a sample
 [Part 1: Creating a server with Node/Express](https://www.twilio.com/docs/video/tutorials/get-started-with-twilio-video-node-express-server)
 
 [Part 2: Creating the Frontend](https://www.twilio.com/docs/video/tutorials/get-started-with-twilio-video-node-express-frontend)
-
-''''
+````
 const handleDisconnectedParticipant = (participant) => {
   // stop listening for this participant
   participant.removeAllListeners();
@@ -76,7 +75,7 @@ const handleDisconnectedParticipant = (participant) => {
   const participantDiv = document.getElementById(participant.identity);
   participantDiv.remove();
 };
-''''
+````
 
 --------------------------------------------------------------------------------
 
