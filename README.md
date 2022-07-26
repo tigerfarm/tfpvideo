@@ -42,10 +42,10 @@ To do:
 
 This documents: [docroot/video.js](docroot/video.js), JavaScript code.
 
-##### Startup
+#### Startup
 window.onload : initialize log message text box. Bind functionality to HTML buttons in [index.html](docroot/index.html)
 
-##### Preview Video Track
+#### Preview Video Track
 [previewLocalTracks()](https://www.twilio.com/docs/video/javascript-getting-started#display-a-camera-preview)
 : append the Twilio Video video track into a DIV container.
 ````
@@ -53,6 +53,22 @@ Before attaching video track:
     <div id="local-media"></div>
 After attaching video track:
     <div id="local-media"><video autoplay=""></video></div>
+````
+
+#### Join a Room
+[joinRoom()](https://www.twilio.com/docs/video/javascript-getting-started#connect-to-a-room)
+: connect to a room using a Twilio Video token and connection options.
++ Preview local video track.
++ Attach the Tracks of the Room's current Participants: attachParticipantTracks(participant)
++ Set room event handling: participantConnected, participantDisconnected, and disconnected(you disconnect).
+
+[attachParticipantTracks(participant)](https://www.twilio.com/docs/video/javascript-getting-started#display-a-remote-participants-video)
+: append the remote participant's Twilio Video video track into a DIV container.
+````
+Before attaching participant video track:
+    <div id="remote-media-div">remote-media</div>
+After attaching video track:
+    <div id="remote-media-div">remote-media<div id="stacy"><video autoplay=""></video></div></div>
 ````
 
 --------------------------------------------------------------------------------

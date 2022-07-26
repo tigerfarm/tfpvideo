@@ -123,7 +123,7 @@ function roomJoined(room) {
         previewLocalTracks();
     }
     // ----------------------------------------------------
-    // Attach the Tracks of the Room's Participants.
+    // Attach the Tracks of the Room's current Participants.
     room.participants.forEach(function (participant) {
         log("++ Already in Room: " + participant.identity);
         attachParticipantTracks(participant);
