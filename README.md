@@ -16,9 +16,11 @@ For testing, check and close rooms:
 JavaScript based on:
 + [documentation samples](https://www.twilio.com/docs/video/javascript-getting-started).
 
-# Twilio JavaScript Video client web application 
+# Twilio JavaScript Video Client Web Application 
 
-In development, works:
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/tigerfarm/tfpvideo)
+
+The following is implemented and tested:
 + User can preview their local video track to test their camera.
 + User can enter their identity that will be used when they get a token and enter a room.
 + User can enter a room name and join the room. Before entering the room, a token is generated to gain access to the room.
@@ -27,11 +29,9 @@ I believe audio is working, but have not tested it.
 + Participants can leave a room. When they leave, the tracks are stopped and are no longer displayed locally and remotely.
 
 To do:
-+ Handle more that 2 participants in a room.
++ Handle more than 2 participants in a room.
 + Mute and unmute audio during a session.
 + Turn video track off and on during a session.
-
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/tigerfarm/tfpvideo)
 
 ### Web Client Screen Print
 
@@ -60,7 +60,7 @@ After attaching video track:
 [joinRoom()](https://www.twilio.com/docs/video/javascript-getting-started#connect-to-a-room)
 : connect to a room using a Twilio Video token and connection options.
 + Preview local video track: previewLocalTracks().
-+ Attach the Tracks of the Room's current Participants: attachParticipantTracks(participant)
++ Attach the tracks of the room's current participants: attachParticipantTracks(participant)
 + Set room event handling: participantConnected, participantDisconnected, and disconnected(you disconnect).
 
 [attachParticipantTracks(participant)](https://www.twilio.com/docs/video/javascript-getting-started#display-a-remote-participants-video)
@@ -82,7 +82,7 @@ Room event: disconnected.
 #### Remote participant joins a Room.
 
 Room event: participantConnected.
-+ Attach the Tracks of the Room's current Participants: attachParticipantTracks(participant)
++ Attach the tracks of the room's current participants: attachParticipantTracks(participant)
 
 #### Remote participant leaves a Room that you are in.
 
