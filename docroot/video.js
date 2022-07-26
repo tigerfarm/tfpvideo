@@ -35,7 +35,7 @@ function clearTextAreas() {
 // -----------------------------------------------------------------------------
 // Track functions
 
-function previewLocalTracks() {
+function previewLocalTracksAttach() {
     if (previewTracks) {
         log("+ Already previewing LocalParticipant's Tracks.");
         return;
@@ -70,7 +70,7 @@ function attachParticipantTracks(participant) {
     // After attaching video track:
     //      <div id="remote-media-div">remote-media<div id="stacy"><video autoplay=""></video></div></div>
     //
-    // Create a div for this participant's tracks
+    // Create a DIV for this participant's tracks
     var participantDiv = document.createElement("div");
     participantDiv.setAttribute("id", participant.identity);
     remoteParticipantContainer.appendChild(participantDiv);
@@ -78,7 +78,7 @@ function attachParticipantTracks(participant) {
     //
     participant.tracks.forEach(publication => {
         if (publication.isSubscribed) {
-            log("+ participantConnected, track published, isSubscribed: " + publication.track.kind);
+            log("+ attachParticipantTracks(participant), track published, isSubscribed: " + publication.track.kind);
             const track = publication.track;
             // From Documentation, Old: remoteParticipantContainer.appendChild(track.attach());
             // From Tutorial:
@@ -118,10 +118,9 @@ function roomJoined(room) {
     document.getElementById('button-join').style.display = 'none';
     document.getElementById('button-leave').style.display = 'inline';
 
-    // Attach LocalParticipant's Tracks, if not already attached.
-    if (!previewTracks) {
-        previewLocalTracks();
-    }
+    // Attach LocalParticipant's Tracks.
+    previewLocalTracksAttach();
+
     // ----------------------------------------------------
     // Attach the Tracks of the Room's current Participants.
     room.participants.forEach(function (participant) {
@@ -307,7 +306,7 @@ window.onload = function () {
     // Preview LocalParticipant's Tracks.
     // Documentation: https://www.twilio.com/docs/video/javascript-getting-started#set-up-local-media
     document.getElementById('button-preview').onclick = function () {
-        previewLocalTracks();
+        previewLocalTracksAttach();
     };
 };
 

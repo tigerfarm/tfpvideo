@@ -19,12 +19,12 @@ JavaScript based on:
 # Twilio JavaScript Video client web application 
 
 In development, works:
-+ User sets their identity.
-+ They can preview their local video track to test their camera.
-+ They can enter a room name and join the room.
++ User can preview their local video track to test their camera.
++ User can enter their identity that will be used when they get a token and enter a room.
++ User can enter a room name and join the room. Before entering the room, a token is generated to gain access to the room.
 + A second participant can join the room. When they do, each participant can view the other's video track.
 I believe audio is working, but have not tested it.
-+ Participants can leave a room. When they leave the tracks are stopped, and no longer displayed locally and remotely.
++ Participants can leave a room. When they leave, the tracks are stopped and are no longer displayed locally and remotely.
 
 To do:
 + Handle more that 2 participants in a room.
@@ -38,16 +38,16 @@ To do:
 <img src="tfpvideo.jpg" width="600"/>
 
 --------------------------------------------------------------------------------
-### Web Client Functionality
+### Web Client Functionality Documentation
 
-This documents: [docroot/video.js](docroot/video.js), JavaScript code.
+This section documents [video.js](docroot/video.js), the client JavaScript code.
 
 #### Startup
 window.onload : initialize log message text box. Bind functionality to HTML buttons in [index.html](docroot/index.html)
 
 #### Preview Video Track
 [previewLocalTracks()](https://www.twilio.com/docs/video/javascript-getting-started#display-a-camera-preview)
-: append the Twilio Video video track into a DIV container.
+: in the HTML DOM, append the Twilio Video video track DIV, into a DIV container.
 ````
 Before attaching video track:
     <div id="local-media"></div>
@@ -55,15 +55,17 @@ After attaching video track:
     <div id="local-media"><video autoplay=""></video></div>
 ````
 
-#### Join a Room
+#### You join a Room.
+
 [joinRoom()](https://www.twilio.com/docs/video/javascript-getting-started#connect-to-a-room)
 : connect to a room using a Twilio Video token and connection options.
-+ Preview local video track.
++ Preview local video track: previewLocalTracks().
 + Attach the Tracks of the Room's current Participants: attachParticipantTracks(participant)
 + Set room event handling: participantConnected, participantDisconnected, and disconnected(you disconnect).
 
 [attachParticipantTracks(participant)](https://www.twilio.com/docs/video/javascript-getting-started#display-a-remote-participants-video)
-: append the remote participant's Twilio Video video track into a DIV container.
+: in the HTML DOM, append the remote participant's Twilio Video video track into a DIV container.
+Use the participant's identity for the appended DIV's ID.
 ````
 Before attaching participant video track:
     <div id="remote-media-div">remote-media</div>
@@ -71,8 +73,24 @@ After attaching video track:
     <div id="remote-media-div">remote-media<div id="stacy"><video autoplay=""></video></div></div>
 ````
 
+#### You leave a Room.
+
+Room event: disconnected.
++ Detach the local media video track.
++ Remove all remote participant DIVs.
+
+#### Remote participant joins a Room.
+
+Room event: participantConnected.
++ Attach the Tracks of the Room's current Participants: attachParticipantTracks(participant)
+
+#### Remote participant leaves a Room that you are in.
+
+Room event: participantDisconnected.
++ Remove remote participant DIVs.
+
 --------------------------------------------------------------------------------
-### Documentation Links
+### Twilio Video Web Application Documentation Links
 
 [Programmable Video Getting Started: JavaScript](https://www.twilio.com/docs/video/javascript-getting-started)
 steps to create a video client web application.
@@ -84,16 +102,7 @@ Generate tokens documentation with a sample
 
 [Part 1: Creating a server with Node/Express](https://www.twilio.com/docs/video/tutorials/get-started-with-twilio-video-node-express-server)
 
-[Part 2: Creating the Frontend](https://www.twilio.com/docs/video/tutorials/get-started-with-twilio-video-node-express-frontend)
-````
-const handleDisconnectedParticipant = (participant) => {
-  // stop listening for this participant
-  participant.removeAllListeners();
-  // remove this participant's div from the page
-  const participantDiv = document.getElementById(participant.identity);
-  participantDiv.remove();
-};
-````
+[Part 2: Creating the web client Frontend](https://www.twilio.com/docs/video/tutorials/get-started-with-twilio-video-node-express-frontend)
 
 --------------------------------------------------------------------------------
 
