@@ -68,6 +68,7 @@ function previewLocalTracksDetach() {
         return;
     }
     // Documentation: https://www.twilio.com/docs/video/javascript-getting-started#disconnect-from-a-room
+    // Tutorial: https://www.twilio.com/docs/video/tutorials/get-started-with-twilio-video-node-express-frontend#clean-up
     // Before attaching video track:
     //      <div id="local-media"><video autoplay=""></video></div>
     // After attaching video track:
@@ -77,11 +78,14 @@ function previewLocalTracksDetach() {
     log('++ Detach local preview tracks.');
     const mediaContainer = document.getElementById('local-media');
     mediaContainer.firstChild.remove();
+    // ----------------------------------------------------
     previewTracks = false;
     document.getElementById('button-preview').style.display = 'inline';
     document.getElementById('button-previewStop').style.display = 'none';
     return;
-    // Stacy, documentation command didn't work. It should work.
+    // ----------------------------------------------------
+    // Stacy, forEach documentation line failed.
+    // ".detach()" is not used in the tutorial. Just the DIVs are removed: ".remove()".
     room.localParticipant.tracks.forEach(publication => {
         log('++ Detach local track: ' + publication.track.kind);
         const attachedElements = publication.track.detach();
