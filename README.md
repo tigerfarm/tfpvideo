@@ -18,6 +18,11 @@ JavaScript based on:
 
 # Twilio JavaScript Video Client Web Application 
 
+Run locally, download the files and run:
+````
+$ node webserver.js
+````
+
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/tigerfarm/tfpvideo)
 
 The following is implemented and tested:

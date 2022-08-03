@@ -2,7 +2,7 @@
 // Basic Twilio Video Client
 // 
 // To do:
-//  More than 2 participants in a room.
+//  Test when having more than 2 participants in a room.
 //  Audio mute/unmute during a session.
 //  Video on/off during a session.
 //  Screen sharing. Handling individual tracks
@@ -85,7 +85,7 @@ function previewLocalTracksDetach() {
     return;
     // ----------------------------------------------------
     // Stacy, forEach documentation line failed.
-    // ".detach()" is not used in the tutorial. Just the DIVs are removed: ".remove()".
+    // ".detach()" is not used in the tutorial. In the tutorial, just the DIVs are removed: ".remove()".
     room.localParticipant.tracks.forEach(publication => {
         log('++ Detach local track: ' + publication.track.kind);
         const attachedElements = publication.track.detach();
@@ -103,9 +103,10 @@ function attachParticipantTracks(participant) {
     // Before attaching participant video track:
     //      <div id="remote-media-div">remote-media</div>
     // After attaching video track:
-    //      <div id="remote-media-div">remote-media<div id="stacy"><video autoplay=""></video></div></div>
+    //      <div id="remote-media-div">remote-media<div id="dave"><video autoplay=""></video></div></div>
+    //      "dave" is the participants identity string.
     //
-    // Create a DIV for this participant's tracks
+    // Create a DIV for this participant's tracks.
     var participantDiv = document.createElement("div");
     participantDiv.setAttribute("id", participant.identity);
     remoteParticipantContainer.appendChild(participantDiv);
@@ -113,13 +114,14 @@ function attachParticipantTracks(participant) {
     //
     participant.tracks.forEach(publication => {
         if (publication.isSubscribed) {
-            log("+ attachParticipantTracks(participant), track published, isSubscribed: " + publication.track.kind);
+            log("++ attachParticipantTracks(participant), track published, isSubscribed: " + publication.track.kind);
             const track = publication.track;
-            // From Documentation, Old: remoteParticipantContainer.appendChild(track.attach());
-            // From Tutorial:
+            // From Documentation code: remoteParticipantContainer.appendChild(track.attach());
+            // was replaced with code from the tutorial:
             theParticipantDiv.appendChild(track.attach());
         }
     });
+    // Stacy, test, I don't think the following is used.
     participant.on('trackSubscribed', track => {
         log("++ " + participant.identity + ", trackSubscribed: " + track.kind);
         theParticipantDiv.appendChild(track.attach());
@@ -132,13 +134,21 @@ function attachParticipantTracks(participant) {
 
 function joinRoom() {
     log("+ joinRoom() room: " + roomName + ", Camera:" + setCamera + " Mic:" + setMic);
+    // ConnectOptions:
+    //  https://sdk.twilio.com/js/video/releases/2.8.0/docs/global.html#ConnectOptions
+    // Examples:
+    //  https://sdk.twilio.com/js/video/releases/2.8.0/docs/module-twilio-video.html?_ga=2.97994207.1548617951.1659373328-1409743.1638379990#.createLocalTracks
+    // Code show connection options:
+    //  https://www.twilio.com/docs/video/javascript-getting-started#set-up-local-media
     var connectOptions = {
         name: roomName,
-        video: setCamera, // { width: 800 }
-        baudio: setMic
-                //, logLevel: 'debug'
+        video: setCamera, // // Or: "video: { width: 800 }"
+        audio: setMic
+        //, logLevel: 'debug'
     };
     // Documentation: https://www.twilio.com/docs/video/javascript-getting-started#connect-to-a-room
+    // Great sample code. In the following search for "Video.connect":
+    //  https://sdk.twilio.com/js/video/releases/2.23.0/docs/
     Twilio.Video.connect(theToken, connectOptions).then(room => {
         log("++ Twilio.Video.connect, join the room: " + roomName);
         roomJoined(room);
@@ -161,8 +171,10 @@ function roomJoined(room) {
 
     // ----------------------------------------------------
     // Attach the Tracks of the Room's current Participants.
+    // Stacy, test for the case when there is more than one participant that is already in the room.
+    //  This should work fine.
     room.participants.forEach(function (participant) {
-        log("++ Already in Room: " + participant.identity);
+        log("++ Attach tracks for participant already in Room: " + participant.identity);
         attachParticipantTracks(participant);
     });
 
@@ -174,6 +186,7 @@ function roomJoined(room) {
         log("+ Room event, participant connected: " + participant.identity);
         attachParticipantTracks(participant);
     });
+    // ----------
     // Participant leaves the Room.
     room.on('participantDisconnected', function (participant) {
         log("+  Room event, Participant disconnected: " + participant.identity + ", room: " + roomName);
@@ -185,10 +198,11 @@ function roomJoined(room) {
         //
         // Remove the the listeners for this participant.
         participant.removeAllListeners();
-        // Remove this participant's DIV from the page
+        // Remove this participant's DIV from the page DOM.
         const participantDiv = document.getElementById(participant.identity);
         participantDiv.remove();
     });
+    // ----------
     // You leave the room.
     room.on('disconnected', function () {
         log('+ Room event, you are disconnecting from the room: ' + roomName);
@@ -215,12 +229,14 @@ function roomJoined(room) {
         document.getElementById('button-leave').style.display = 'none';
         log("+ You're disconnected from the room.");
     });
+    
     // ----------------------------------------------------
     log("+ Room joined and set up.");
 }
 
 // -----------------------------------------------------------------------------
 function listDevices() {
+    // Run differently for Chrome and Firefox.
     log("+ listDevices()");
     navigator.mediaDevices.enumerateDevices().then(devices => {
         const videoInput = devices.find(device => device.kind === 'videoinput');
