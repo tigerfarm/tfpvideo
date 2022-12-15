@@ -2,8 +2,11 @@
 // Basic Twilio Video Client
 // 
 // To do:
+//  Audio mute/unmute seems to work. I really need to test on separate computers instead of just separate browsers.
+//  Video mute/unmute during a session:
+//      https://www.twilio.com/docs/video/javascript-getting-started#mute-your-local-media
+//      https://www.twilio.com/docs/video/javascript-getting-started#unmute-your-local-media
 //  Test when having more than 2 participants in a room.
-//  Audio mute/unmute during a session.
 //  Video on/off during a session.
 //  Screen sharing. Handling individual tracks
 //  Backgrounds.
@@ -37,6 +40,91 @@ function clearTextAreas() {
 // -----------------------------------------------------------------------------
 // Track functions
 
+function toggleCameraOn() {
+    // https://www.twilio.com/docs/video/javascript-getting-started#mute-your-local-media
+    log("+ toggleCameraOn()");
+    if (setCamera) {
+        log("+ Camera on already on.");
+        document.getElementById('button-CameraOn').style.display = 'none';
+        document.getElementById('button-CameraOff').style.display = 'inline';
+    } else {
+        log("+ Set Camera on.");
+        setCamera = true;
+        activeRoom.localParticipant.videoTracks.forEach(publication => {
+            // tested, works: publication.track.enable();
+            // re-publication the track.
+            log("+ Camera track enabled: " + setCamera);
+        });
+        previewLocalTracksAttach();
+        document.getElementById('button-MicOn').style.display = 'none';
+        document.getElementById('button-MicOff').style.display = 'inline';
+    }
+    return;
+}
+
+function toggleCameraOff() {
+    // https://www.twilio.com/docs/video/javascript-getting-started#mute-your-local-media
+    log("+ toggleCameraOff()");
+    if (setCamera) {
+        log("+ Set Camera off.");
+        setCamera = false;
+        activeRoom.localParticipant.videoTracks.forEach(publication => {
+            // tested, works: publication.track.disable();
+            // previewLocalTracksDetach();
+            publication.track.stop();
+            publication.unpublish();
+            log("+ Camera track disable: " + setCamera);
+        });
+        document.getElementById('button-CameraOn').style.display = 'inline';
+        document.getElementById('button-CameraOff').style.display = 'none';
+    } else {
+        log("+ Camera on already off.");
+        document.getElementById('button-CameraOn').style.display = 'inline';
+        document.getElementById('button-CameraOff').style.display = 'none';
+    }
+}
+
+function toggleMicOn() {
+    // https://www.twilio.com/docs/video/javascript-getting-started#mute-your-local-media
+    log("+ toggleMicOn()");
+    if (setMic) {
+        log("+ Mic on already on.");
+        document.getElementById('button-MicOn').style.display = 'none';
+        document.getElementById('button-MicOff').style.display = 'inline';
+    } else {
+        log("+ Set Mic on.");
+        activeRoom.localParticipant.audioTracks.forEach(publication => {
+            publication.track.enable();
+            log("+ Mic track enabled: " + setMic);
+        });
+        setMic = true;
+        document.getElementById('button-MicOn').style.display = 'none';
+        document.getElementById('button-MicOff').style.display = 'inline';
+    }
+    return;
+    // activeRoom.localParticipant.videoTracks.forEach(publication => {
+    // log("+ toggleMic() room: " + roomName + ", Camera:" + setCamera + " Mic:" + setMic);
+}
+
+function toggleMicOff() {
+    // https://www.twilio.com/docs/video/javascript-getting-started#mute-your-local-media
+    log("+ toggleMicOff()");
+    if (setMic) {
+        log("+ Set Mic off.");
+        activeRoom.localParticipant.audioTracks.forEach(publication => {
+            publication.track.disable();
+            log("+ Mic track disable: " + setMic);
+        });
+        setMic = false;
+        document.getElementById('button-MicOn').style.display = 'inline';
+        document.getElementById('button-MicOff').style.display = 'none';
+    } else {
+        log("+ Mic on already off.");
+        document.getElementById('button-MicOn').style.display = 'inline';
+        document.getElementById('button-MicOff').style.display = 'none';
+    }
+}
+
 function previewLocalTracksAttach() {
     if (previewTracks) {
         log("+ Already previewing LocalParticipant's Tracks.");
@@ -69,9 +157,9 @@ function previewLocalTracksDetach() {
     }
     // Documentation: https://www.twilio.com/docs/video/javascript-getting-started#disconnect-from-a-room
     // Tutorial: https://www.twilio.com/docs/video/tutorials/get-started-with-twilio-video-node-express-frontend#clean-up
-    // Before attaching video track:
+    // Before detaching video track:
     //      <div id="local-media"><video autoplay=""></video></div>
-    // After attaching video track:
+    // After detaching video track:
     //      <div id="local-media"></div>
     //
     // Detach the local media elements
@@ -121,11 +209,13 @@ function attachParticipantTracks(participant) {
             theParticipantDiv.appendChild(track.attach());
         }
     });
-    // Stacy, test, I don't think the following is used.
     participant.on('trackSubscribed', track => {
+        // Used when joining a room. This shows the remote participant tracks subscribed.
+        //  + Room event, participant connected: dave
+        //  ++ dave, trackSubscribed: audio
+        //  ++ dave, trackSubscribed: video
         log("++ " + participant.identity + ", trackSubscribed: " + track.kind);
         theParticipantDiv.appendChild(track.attach());
-        // From Documentation, Old: document.getElementById('remote-media-div').appendChild(track.attach());
     });
 }
 
@@ -144,7 +234,7 @@ function joinRoom() {
         name: roomName,
         video: setCamera, // // Or: "video: { width: 800 }"
         audio: setMic
-        //, logLevel: 'debug'
+                //, logLevel: 'debug'
     };
     // Documentation: https://www.twilio.com/docs/video/javascript-getting-started#connect-to-a-room
     // Great sample code. In the following search for "Video.connect":
@@ -159,7 +249,11 @@ function joinRoom() {
 
 function roomJoined(room) {
     window.room = activeRoom = room;
+    //
+    // Gives the Twilio Video room id.
     log("++ activeRoom set: " + activeRoom);
+    // For example:
+    // ++ activeRoom set: [Room #1: RMa22e512f4e1f0e8534a154fd86ee4963]
 
     document.getElementById('button-join').style.display = 'none';
     document.getElementById('button-leave').style.display = 'inline';
@@ -229,14 +323,15 @@ function roomJoined(room) {
         document.getElementById('button-leave').style.display = 'none';
         log("+ You're disconnected from the room.");
     });
-    
+
     // ----------------------------------------------------
     log("+ Room joined and set up.");
 }
 
 // -----------------------------------------------------------------------------
 function listDevices() {
-    // Run differently for Chrome and Firefox.
+    // Firefox includes videoInput, audioinput, and audiooutput.
+    // Chrome only includes videoInput and audioinput.
     log("+ listDevices()");
     navigator.mediaDevices.enumerateDevices().then(devices => {
         const videoInput = devices.find(device => device.kind === 'videoinput');
@@ -257,6 +352,8 @@ function listDevices() {
 // -----------------------------------------------------------------------------
 // Needs testing
 function leaveRoomIfJoined() {
+    // Does not get called.
+    alert("+ leaveRoomIfJoined()");
     if (activeRoom) {
         activeRoom.disconnect;
     }
@@ -265,7 +362,6 @@ function leaveRoomIfJoined() {
 // -----------------------------------------------------------------------------
 window.onload = function () {
     document.getElementById('logBox').value = '+++ Start.';
-
     // When transitioning away from this page, disconnect from the room, if joined.
     window.addEventListener('beforeunload', leaveRoomIfJoined);
 
@@ -274,6 +370,10 @@ window.onload = function () {
     document.getElementById('button-leave').style.display = 'none';
     document.getElementById('button-preview').style.display = 'inline';
     document.getElementById('button-previewStop').style.display = 'none';
+    document.getElementById('button-MicOn').style.display = 'none';
+    document.getElementById('button-MicOff').style.display = 'inline';
+    document.getElementById('button-CameraOn').style.display = 'none';
+    document.getElementById('button-CameraOff').style.display = 'inline';
 
     // Bind button to join Room.
     document.getElementById('button-join').onclick = function () {
